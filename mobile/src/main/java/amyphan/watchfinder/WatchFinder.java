@@ -61,7 +61,7 @@ public class WatchFinder extends ActionBarActivity
             public void onClick(View v) {
                 Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                 long[] vibrationPattern = {0, 500, 50, 300};
-                final int indexInPatternToRepeat = -1;
+                final int indexInPatternToRepeat = 1;
 
                 if(vibrateOnButton.isChecked())
                 {
@@ -70,6 +70,7 @@ public class WatchFinder extends ActionBarActivity
                 }
                 else
                 {
+                    vibrator.cancel();
                     Toast.makeText(WatchFinder.this,"VIBRATE OFF",Toast.LENGTH_SHORT).show();
                 }
             }

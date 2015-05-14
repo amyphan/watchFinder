@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WatchFinder</string>
+    <string name="notify">Notify Wearable</string>
+    <string name="label">WatchFinder</string>
 </resources>

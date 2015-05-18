@@ -2,6 +2,8 @@ package amyphan.watchfinder;
 
 import android.app.Notification;
 import android.os.Bundle;
+import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -13,17 +15,37 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+
 /**
  * Created by Amy on 4/15/2015.
  */
-public class WatchFinder extends ActionBarActivity
+public class WatchFinder extends ActionBarActivity implements MessageApi.MessageListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
+    private static final String TAG = "watchFinder";
+    private static final String start_Vibrate = "/start_Vibrate";
+    private GoogleApiClient mGoogleApiClient;
     private ToggleButton vibrateOnButton;
     private Toolbar toolbar;
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.watchfinderactivity);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
         toolbar = (Toolbar) findViewById(R.id.tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -31,6 +53,85 @@ public class WatchFinder extends ActionBarActivity
 
         toggleClick();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(!mGoogleApiClient.isConnected())
+        {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    protected void onDestroy()
+    {
+        if(mGoogleApiClient.isConnected())
+        {
+            mGoogleApiClient.disconnect();
+        }
+        super.onDestroy();
+    }
+
+    public void onConnected(Bundle bundle)
+    {
+        Wearable.MessageApi.addListener(mGoogleApiClient, this);
+    }
+
+    public void onConnectionSuspended(int i)
+    {
+        Wearable.MessageApi.removeListener(mGoogleApiClient, this);
+    }
+
+    @Override
+    public void onMessageReceived(final MessageEvent messageEvent) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (messageEvent.getPath().equals(start_Vibrate)) {
+                    Toast.makeText(getApplicationContext(), "Vibration on",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.e(TAG, "Failed to connect to Google Api Client with error code "
+                + connectionResult.getErrorCode());
+    }
+
+    /**
+     * Sends a message to Wearable MainActivity when button is pressed.
+     */
+    public void onStartWearableActivityClick(View view) {
+        Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).setResultCallback(
+                new ResultCallback<NodeApi.GetConnectedNodesResult>() {
+                    @Override
+                    public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
+                        for (final Node node : getConnectedNodesResult.getNodes()) {
+                            Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(),
+                                    start_Vibrate, new byte[0]).setResultCallback(
+                                    getSendMessageResultCallback());
+                        }
+                    }
+                });
+    }
+
+    private ResultCallback<MessageApi.SendMessageResult> getSendMessageResultCallback() {
+        return new ResultCallback<MessageApi.SendMessageResult>() {
+            @Override
+            public void onResult(MessageApi.SendMessageResult sendMessageResult) {
+                if (!sendMessageResult.getStatus().isSuccess()) {
+                    Log.e(TAG, "Failed to connect to Google Api Client with status "
+                            + sendMessageResult.getStatus());
+                }
+            }
+        };
+    }
+}
+
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.menu_main, menu);

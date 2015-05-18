@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">WatchFinder</string>
+    <string name="no_device_found">No device able to confirm was found</string>
 </resources>

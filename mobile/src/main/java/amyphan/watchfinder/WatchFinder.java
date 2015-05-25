@@ -130,8 +130,6 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
             }
         };
     }
-}
-
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.menu_main, menu);

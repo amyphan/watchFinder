@@ -2,10 +2,13 @@
  * Created by Amy on 5/10/2015.
  */
 
+
 import android.app.Activity;
 
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -21,13 +24,19 @@ import java.util.Set;
 
 import amyphan.watchfinder.R;
 
+
 public class wearActivity extends Activity implements GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks,
         CapabilityApi.CapabilityListener {
+
     private static final String CONFIRMATION_HANDLER_CAPABILITY_NAME = "confirmation_handler";
     private static final String TAG = "watchFinder";
+    private static final String start_Vibrate = "/start_Vibrate";
+    private static final String cancel_Vibrate = "/cancel_Vibrate";
 
     private GoogleApiClient mGoogleApiClient;
     private Node mConfirmationHandlerNode;
+
+    Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
     @Override
     protected void onCreate(Bundle b) {
@@ -55,6 +64,23 @@ public class wearActivity extends Activity implements GoogleApiClient.OnConnecti
         }
         super.onPause();
     }
+    public void onStartVibration(View view)
+    {
+        long[] vibrationPattern = {0, 500, 50, 300};
+        final int repeat = -1;
+
+        vibrator.vibrate(vibrationPattern, repeat);
+        sendMessageToCompanion(start_Vibrate);
+    }
+    public void onCancelVibration(View view)
+    {
+        view.setPressed(true);
+        vibrator.cancel();
+        sendMessageToCompanion(cancel_Vibrate);
+        finish();
+    }
+
+
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.e(TAG, "Failed to connect to Google Api Client");
         mConfirmationHandlerNode = null;

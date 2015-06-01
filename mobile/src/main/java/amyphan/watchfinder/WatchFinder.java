@@ -2,7 +2,6 @@ package amyphan.watchfinder;
 
 import android.app.Notification;
 import android.os.Bundle;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 import android.view.View;
@@ -24,6 +23,8 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+
+
 /**
  * Created by Amy on 4/15/2015.
  */
@@ -31,10 +32,13 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
 {
     private static final String TAG = "watchFinder";
+    private static final String start_Activity_Path = "/start-activity";
     private static final String start_Vibrate = "/start_Vibrate";
+    private static final String cancel_Vibrate = "/cancel_Vibrate";
     private GoogleApiClient mGoogleApiClient;
     private ToggleButton vibrateOnButton;
     private Toolbar toolbar;
+
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
@@ -90,6 +94,10 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
                 if (messageEvent.getPath().equals(start_Vibrate)) {
                     Toast.makeText(getApplicationContext(), "Vibration on",
                             Toast.LENGTH_SHORT).show();
+                } else if (messageEvent.getPath().equals(cancel_Vibrate)) {
+                    Toast.makeText(getApplicationContext(), "Vibration off",
+                            Toast.LENGTH_SHORT).show();
+
                 }
             }
         });
@@ -112,7 +120,7 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
                     public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
                         for (final Node node : getConnectedNodesResult.getNodes()) {
                             Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(),
-                                    start_Vibrate, new byte[0]).setResultCallback(
+                                    start_Activity_Path, new byte[0]).setResultCallback(
                                     getSendMessageResultCallback());
                         }
                     }
@@ -157,6 +165,8 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
             public void onClick(View v) {
                 if(vibrateOnButton.isChecked())
                 {
+                    onStartWearableActivityClick(v);
+                    /*
                     Notification notification = new NotificationCompat.Builder(getApplication())
                             .setSmallIcon(R.drawable.android_app_icon)
                             .setContentTitle("WatchFinder")
@@ -170,7 +180,12 @@ public class WatchFinder extends ActionBarActivity implements MessageApi.Message
 
                     int notificationId = 1;
                     notificationManager.notify(notificationId, notification);
+                    */
                     Toast.makeText(WatchFinder.this,"VIBRATE ON",Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(WatchFinder.this,"VIBRATE OFF",Toast.LENGTH_SHORT).show();
                 }
             }
 
